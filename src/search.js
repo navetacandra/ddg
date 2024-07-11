@@ -13,12 +13,12 @@ exports.search = async (query, type = "regular", all = "false") => {
     if (!type || type == "regular") {
       return await regularSearch(apiURL.path, all);
     } else if (type == "image") {
-      return await mediaSearch(query, apiURL.vqd, "i", (item) => {
+      return await mediaSearch(query, apiURL.vqd, "i", "&p=1&image_exp=a&product_ad_extensions_exp=b", (item) => {
         const { height, width, image, url, title } = item;
         return { height, width, image, url, title };
-      }, true);
+      }, all);
     } else if (type == "video") {
-      return await mediaSearch(query, apiURL.vqd, "v", (item) => {
+      return await mediaSearch(query, apiURL.vqd, "v", "&p=-1", (item) => {
         const {
           content: url,
           title,
@@ -39,7 +39,12 @@ exports.search = async (query, type = "regular", all = "false") => {
           published,
           publisher,
         };
-      }, true);
+      }, all);
+    } else if (type == "news") {
+      return await mediaSearch(query, apiURL.vqd, "news", "&p=-1&noamp=1", (item) => {
+        const { excerpt, relative_time, source, title, url, date } = item;
+        return { excerpt, relative_time, source, title, url, date: Number(`${date}`.padEnd(13, "0")) };
+      }, all);
     }
   } catch (err) {
     throw err;
@@ -99,9 +104,9 @@ async function regularSearch(path, fetchAll = false) {
     : { hasNext: !!next, next: next?.n || undefined, results: parsed };
 }
 
-async function mediaSearch(query, vqnd, prefix, parser, fetchAll = false, cursor = 0) {
+async function mediaSearch(query, vqnd, prefix, additional_param, parser, fetchAll = false, cursor = 0) {
   const res = await request(
-    `https://duckduckgo.com/${prefix}.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}&image_exp=a&product_ad_extensions_exp=b`,
+    `https://duckduckgo.com/${prefix}.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}${additional_param}`,
   );
   const { results, next } = JSON.parse(res);
   const data = results.map(parser);
@@ -109,7 +114,7 @@ async function mediaSearch(query, vqnd, prefix, parser, fetchAll = false, cursor
     return {
       results: [
         ...data,
-        ...(await mediaSearch(query, vqnd, prefix, parser, fetchAll, cursor + data.length))
+        ...(await mediaSearch(query, vqnd, prefix, additional_param, parser, fetchAll, cursor + data.length))
           .results,
       ],
     };
