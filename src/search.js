@@ -4,15 +4,17 @@ const { request } = require("./utils");
  *
  * @param {string} query
  * @param {'regular'|'image'|'video'|'news'|'map'} type
+ * @param {boolean} all
  */
-exports.search = async (query, type) => {
+exports.search = async (query, type = "regular", all = "false") => {
   try {
     const apiURL = await getJS(query);
 
     if (!type || type == "regular") {
-      return await regularSearch(apiURL.path, true);
+      return await regularSearch(apiURL.path, all);
+    } else if (type == "image") {
+      return await imageSearch(query, apiURL.vqd, true);
     }
-    return {};
   } catch (err) {
     reject(err);
   }
@@ -60,11 +62,36 @@ async function regularSearch(path, fetchAll = false) {
       };
     });
 
-  if (fetchAll && next != null) {
+  if (fetchAll && !!next) {
     return {
       results: [...parsed, ...(await regularSearch(next.n, fetchAll)).results],
     };
   }
 
-  return { hasNext: next != null, next: next?.n || undefined, results: parsed };
+  return fetchAll
+    ? { results: parsed }
+    : { hasNext: !!next, next: next?.n || undefined, results: parsed };
+}
+
+async function imageSearch(query, vqnd, fetchAll = false, cursor = 0) {
+  const res = await request(
+    `https://duckduckgo.com/i.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}&image_exp=a&product_ad_extensions_exp=b`,
+  );
+  const { results, next } = JSON.parse(res);
+  const data = results.map((item) => {
+    const { height, width, image, url, title } = item;
+    return { height, width, image, url, title };
+  });
+  if (fetchAll && !!next) {
+    return {
+      results: [
+        ...data,
+        ...(await imageSearch(query, vqnd, fetchAll, cursor + data.length))
+          .results,
+      ],
+    };
+  }
+  return fetchAll
+    ? { results: data }
+    : { results: data, hasNext: !!next, nextCursor: cursor + data.length };
 }
