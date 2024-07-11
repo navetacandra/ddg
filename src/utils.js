@@ -18,7 +18,9 @@ exports.request = (urlString, options = {}) => {
           resolve(data);
         } else {
           reject(
-            new Error(`Request for ${urlString} failed with status code ${res.statusCode}`),
+            new Error(
+              `Request for ${urlString} failed with status code ${res.statusCode}`,
+            ),
           );
         }
       });

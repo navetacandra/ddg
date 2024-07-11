@@ -13,13 +13,27 @@ exports.search = async (query, type = "regular", all = "false") => {
     if (!type || type == "regular") {
       return await regularSearch(apiURL.path, all);
     } else if (type == "image") {
-      return await mediaSearch(query, apiURL.vqd, "i", "&p=1&image_exp=a&product_ad_extensions_exp=b", (item) => {
-        const { height, width, image, url, title } = item;
-        return { height, width, image, url, title };
-      }, all);
+      return await mediaSearch(
+        query,
+        apiURL.vqd,
+        "i",
+        "&p=1&image_exp=a&product_ad_extensions_exp=b",
+        ({ height, width, image, url, title }) => ({
+          height,
+          width,
+          image,
+          url,
+          title,
+        }),
+        all,
+      );
     } else if (type == "video") {
-      return await mediaSearch(query, apiURL.vqd, "v", "&p=-1", (item) => {
-        const {
+      return await mediaSearch(
+        query,
+        apiURL.vqd,
+        "v",
+        "&p=-1",
+        ({
           content: url,
           title,
           description,
@@ -28,8 +42,7 @@ exports.search = async (query, type = "regular", all = "false") => {
           embed_url,
           published,
           publisher,
-        } = item;
-        return {
+        }) => ({
           url,
           title,
           description,
@@ -38,13 +51,61 @@ exports.search = async (query, type = "regular", all = "false") => {
           embed_url,
           published,
           publisher,
-        };
-      }, all);
+        }),
+        all,
+      );
     } else if (type == "news") {
-      return await mediaSearch(query, apiURL.vqd, "news", "&p=-1&noamp=1", (item) => {
-        const { excerpt, relative_time, source, title, url, date } = item;
-        return { excerpt, relative_time, source, title, url, date: Number(`${date}`.padEnd(13, "0")) };
-      }, all);
+      return await mediaSearch(
+        query,
+        apiURL.vqd,
+        "news",
+        "&p=-1&noamp=1",
+        (item) => {
+          const { excerpt, relative_time, source, title, url, date } = item;
+          return {
+            excerpt,
+            relative_time,
+            source,
+            title,
+            url,
+            date: Number(`${date}`.padEnd(13, "0")),
+          };
+        },
+        all,
+      );
+    } else if (type == "map") {
+      return await mediaSearch(
+        query,
+        apiURL.vqd,
+        "local",
+        "tg=maps_places&rt=D&mkexp=b&wiki_info=1&is_requery=1&latitude=0&longitude=0&location_type=geoip",
+        ({
+          id,
+          name,
+          address,
+          city,
+          address_lines,
+          city,
+          coordinates,
+          country_code,
+          ddg_category: category,
+          display_phone: phone,
+          timezone,
+        }) => ({
+          id,
+          name,
+          address,
+          city,
+          address_lines,
+          city,
+          coordinates,
+          country_code,
+          category,
+          phone,
+          timezone,
+        }),
+        all,
+      );
     }
   } catch (err) {
     throw err;
@@ -104,7 +165,15 @@ async function regularSearch(path, fetchAll = false) {
     : { hasNext: !!next, next: next?.n || undefined, results: parsed };
 }
 
-async function mediaSearch(query, vqnd, prefix, additional_param, parser, fetchAll = false, cursor = 0) {
+async function mediaSearch(
+  query,
+  vqnd,
+  prefix,
+  additional_param,
+  parser,
+  fetchAll = false,
+  cursor = 0,
+) {
   const res = await request(
     `https://duckduckgo.com/${prefix}.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}${additional_param}`,
   );
@@ -114,8 +183,17 @@ async function mediaSearch(query, vqnd, prefix, additional_param, parser, fetchA
     return {
       results: [
         ...data,
-        ...(await mediaSearch(query, vqnd, prefix, additional_param, parser, fetchAll, cursor + data.length))
-          .results,
+        ...(
+          await mediaSearch(
+            query,
+            vqnd,
+            prefix,
+            additional_param,
+            parser,
+            fetchAll,
+            cursor + data.length,
+          )
+        ).results,
       ],
     };
   }

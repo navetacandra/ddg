@@ -1,6 +1,6 @@
 const { search } = require("./search");
 
 (async () => {
-  const result = await search("github", "news");
+  const result = await search("github", "map");
   console.log(result);
 })();
