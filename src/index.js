@@ -1,6 +1,6 @@
-const { search } = require("./search");
+const { translate } = require("./translate");
 
 (async () => {
-  const result = await search("github", "map");
-  console.log(result);
+  const translated = await translate("Hello, World!", "", "id");
+  console.log(translated);
 })();
