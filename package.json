@@ -1,5 +1,6 @@
 {
   "name": "@navetacandra/ddg",
+  "private": false,
   "version": "0.0.1",
   "description": "DuckDuckGo Scraper",
   "main": "src/index.js",
@@ -25,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/navetacandra/ddg/issues"
   },
-  "homepage": "https://github.com/navetacandra/ddg#readme"
+  "homepage": "https://github.com/navetacandra/ddg#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
