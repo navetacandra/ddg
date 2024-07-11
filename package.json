@@ -1,0 +1,29 @@
+{
+  "name": "ddg",
+  "version": "0.0.1",
+  "description": "DuckDuckGo Scraper",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/navetacandra/ddg.git"
+  },
+  "keywords": [
+    "duckduckgo",
+    "search",
+    "search engine",
+    "serp",
+    "image",
+    "video",
+    "maps",
+    "translate"
+  ],
+  "author": "navetacandra <naveta.cand@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/navetacandra/ddg/issues"
+  },
+  "homepage": "https://github.com/navetacandra/ddg#readme"
+}
