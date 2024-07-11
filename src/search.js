@@ -13,12 +13,36 @@ exports.search = async (query, type = "regular", all = "false") => {
     if (!type || type == "regular") {
       return await regularSearch(apiURL.path, all);
     } else if (type == "image") {
-      return await imageSearch(query, apiURL.vqd, true);
+      return await mediaSearch(query, apiURL.vqd, "i", (item) => {
+        const { height, width, image, url, title } = item;
+        return { height, width, image, url, title };
+      }, true);
     } else if (type == "video") {
-      return await videoSearch(query, apiURL.vqd, true);
+      return await mediaSearch(query, apiURL.vqd, "v", (item) => {
+        const {
+          content: url,
+          title,
+          description,
+          duration,
+          images,
+          embed_url,
+          published,
+          publisher,
+        } = item;
+        return {
+          url,
+          title,
+          description,
+          duration,
+          images,
+          embed_url,
+          published,
+          publisher,
+        };
+      }, true);
     }
   } catch (err) {
-    reject(err);
+    throw err;
   }
 };
 
@@ -75,61 +99,17 @@ async function regularSearch(path, fetchAll = false) {
     : { hasNext: !!next, next: next?.n || undefined, results: parsed };
 }
 
-async function imageSearch(query, vqnd, fetchAll = false, cursor = 0) {
+async function mediaSearch(query, vqnd, prefix, parser, fetchAll = false, cursor = 0) {
   const res = await request(
-    `https://duckduckgo.com/i.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}&image_exp=a&product_ad_extensions_exp=b`,
+    `https://duckduckgo.com/${prefix}.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}&image_exp=a&product_ad_extensions_exp=b`,
   );
   const { results, next } = JSON.parse(res);
-  const data = results.map((item) => {
-    const { height, width, image, url, title } = item;
-    return { height, width, image, url, title };
-  });
+  const data = results.map(parser);
   if (fetchAll && !!next) {
     return {
       results: [
         ...data,
-        ...(await imageSearch(query, vqnd, fetchAll, cursor + data.length))
-          .results,
-      ],
-    };
-  }
-  return fetchAll
-    ? { results: data }
-    : { results: data, hasNext: !!next, nextCursor: cursor + data.length };
-}
-
-async function videoSearch(query, vqnd, fetchAll = false, cursor = 0) {
-  const res = await request(
-    `https://duckduckgo.com/v.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}&image_exp=a&product_ad_extensions_exp=b`,
-  );
-  const { results, next } = JSON.parse(res);
-  const data = results.map((item) => {
-    const {
-      content: url,
-      title,
-      description,
-      duration,
-      images,
-      embed_url,
-      published,
-      publisher,
-    } = item;
-    return {
-      url,
-      title,
-      description,
-      duration,
-      images,
-      embed_url,
-      published,
-      publisher,
-    };
-  });
-  if (fetchAll && !!next) {
-    return {
-      results: [
-        ...data,
-        ...(await videoSearch(query, vqnd, fetchAll, cursor + data.length))
+        ...(await mediaSearch(query, vqnd, prefix, parser, fetchAll, cursor + data.length))
           .results,
       ],
     };
