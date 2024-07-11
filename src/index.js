@@ -1,6 +1,5 @@
-const { translate } = require("./translate");
+const search = require("./search");
+const translate = require("./translate");
 
-(async () => {
-  const translated = await translate("Hello, World!", "", "id");
-  console.log(translated);
-})();
+exports.search = search.search;
+exports.translate = translate.translate;
