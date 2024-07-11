@@ -1,5 +1,5 @@
 {
-  "name": "ddg",
+  "name": "@navetacandra/ddg",
   "version": "0.0.1",
   "description": "DuckDuckGo Scraper",
   "main": "src/index.js",
