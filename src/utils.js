@@ -1,12 +1,18 @@
 const http = require("http");
 const https = require("https");
 
+function randomIp() {
+  return `${Math.floor(Math.random() * 255)}.${Math.floor(
+    Math.random() * 255,
+  )}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+}
+
 exports.request = (urlString, options = {}) => {
   return new Promise((resolve, reject) => {
     const urlObject = new URL(urlString);
     const protocol = urlObject.protocol === "https:" ? https : http;
 
-    const req = protocol.request(urlString, options, (res) => {
+    const req = protocol.request(urlString, {...options, headers: {...options.headers, "X-Forwarded-For": randomIp()}}, (res) => {
       let data = "";
 
       res.on("data", (chunk) => {
