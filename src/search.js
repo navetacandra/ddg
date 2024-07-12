@@ -1,20 +1,24 @@
-const { request } = require("./utils");
+const { request, getJS } = require("./utils");
 
 /**
  *
- * @param {string} query
+ * @param {{query: string, next: string|undefined}} data
  * @param {'regular'|'image'|'video'|'news'|'map'} type
  * @param {boolean} all
+ * @returns {Promise<{results: Array.<Object>, hasNext: boolean|undefined, next: string|number|undefined}>}
  */
-exports.search = async (query, type = "regular", all = "false") => {
+exports.search = async (data, type = "regular", all = false) => {
   try {
-    const apiURL = await getJS(query);
+    const apiURL =
+      data.next && typeof data.next == "string"
+        ? { path: data.next, vqd: new URLSearchParams(data.next).get(`vqd`) }
+        : await getJS(data.query);
 
     if (!type || type == "regular") {
       return await regularSearch(apiURL.path, all);
     } else if (type == "image") {
       return await mediaSearch(
-        query,
+        data.query,
         apiURL.vqd,
         "i",
         "&p=1&image_exp=a&product_ad_extensions_exp=b",
@@ -26,10 +30,11 @@ exports.search = async (query, type = "regular", all = "false") => {
           title,
         }),
         all,
+        data.next || 0,
       );
     } else if (type == "video") {
       return await mediaSearch(
-        query,
+        data.query,
         apiURL.vqd,
         "v",
         "&p=-1",
@@ -53,10 +58,11 @@ exports.search = async (query, type = "regular", all = "false") => {
           publisher,
         }),
         all,
+        data.next || 0,
       );
     } else if (type == "news") {
       return await mediaSearch(
-        query,
+        data.query,
         apiURL.vqd,
         "news",
         "&p=-1&noamp=1",
@@ -72,10 +78,11 @@ exports.search = async (query, type = "regular", all = "false") => {
           };
         },
         all,
+        data.next || 0,
       );
     } else if (type == "map") {
       return await mediaSearch(
-        query,
+        data.query,
         apiURL.vqd,
         "local",
         "tg=maps_places&rt=D&mkexp=b&wiki_info=1&is_requery=1&latitude=0&longitude=0&location_type=geoip",
@@ -103,30 +110,13 @@ exports.search = async (query, type = "regular", all = "false") => {
           timezone,
         }),
         all,
+        data.next || 0,
       );
     }
   } catch (err) {
     throw err;
   }
 };
-
-/**
- * Get the JS URL
- *
- * @param {string} query
- * @returns {Promise<{url: string, path: string, vqd: string}>}
- */
-async function getJS(query) {
-  const html = await request(`https://duckduckgo.com/?q=${query}`);
-  const url = html.match(
-    /"(https:\/\/links\.duckduckgo\.com\/d\.js[^">]+)">/,
-  )[1];
-  return {
-    url,
-    path: url.match(/\/d\.js.*/)[0],
-    vqd: url.match(/vqd=([^&]+)/)[1],
-  };
-}
 
 /**
  * Parse the JS
@@ -163,6 +153,18 @@ async function regularSearch(path, fetchAll = false) {
     : { hasNext: !!next, next: next?.n || undefined, results: parsed };
 }
 
+/**
+ * Parse the JS
+ *
+ * @param {string} query
+ * @param {string} vqnd
+ * @param {string} prefix
+ * @param {string} additional_param
+ * @param {Function} parser
+ * @param {boolean} fetchAll
+ * @param {number} cursor
+ * @returns {Promise<{results: {title: string, url: string, domain: string, description: string, icon: string}[], hasNext: boolean|undefined, next: number|undefined}>} The search results.
+ */
 async function mediaSearch(
   query,
   vqnd,
@@ -197,5 +199,5 @@ async function mediaSearch(
   }
   return fetchAll
     ? { results: data }
-    : { results: data, hasNext: !!next, nextCursor: cursor + data.length };
+    : { results: data, hasNext: !!next, next: !!next ? cursor + data.length : undefined };
 }

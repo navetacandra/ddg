@@ -12,25 +12,32 @@ exports.request = (urlString, options = {}) => {
     const urlObject = new URL(urlString);
     const protocol = urlObject.protocol === "https:" ? https : http;
 
-    const req = protocol.request(urlString, {...options, headers: {...options.headers, "X-Forwarded-For": randomIp()}}, (res) => {
-      let data = "";
+    const req = protocol.request(
+      urlString,
+      {
+        ...options,
+        headers: { ...options.headers, "X-Forwarded-For": randomIp() },
+      },
+      (res) => {
+        let data = "";
 
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
 
-      res.on("end", () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(data);
-        } else {
-          reject(
-            new Error(
-              `Request for ${urlString} failed with status code ${res.statusCode}`,
-            ),
-          );
-        }
-      });
-    });
+        res.on("end", () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(data);
+          } else {
+            reject(
+              new Error(
+                `Request for ${urlString} failed with status code ${res.statusCode}`,
+              ),
+            );
+          }
+        });
+      },
+    );
 
     req.on("error", (e) => {
       reject(new Error(`Problem with request: ${e.message}`));
@@ -42,4 +49,22 @@ exports.request = (urlString, options = {}) => {
 
     req.end();
   });
+};
+
+/**
+ * Get the JS URL
+ *
+ * @param {string} query
+ * @returns {Promise<{url: string, path: string, vqd: string}>}
+ */
+exports.getJS = async (query) => {
+  const html = await exports.request(`https://duckduckgo.com/?q=${query}`);
+  const url = html.match(
+    /"(https:\/\/links\.duckduckgo\.com\/d\.js[^">]+)">/,
+  )[1];
+  return {
+    url,
+    path: url.match(/\/d\.js.*/)[0],
+    vqd: url.match(/vqd=([^&]+)/)[1],
+  };
 };

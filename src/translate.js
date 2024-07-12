@@ -1,6 +1,6 @@
-const { request } = require("./utils");
+const { request, getJS } = require("./utils");
 
-const baseURL = 'https://duckduckgo.com/translation.js?vqd=4-83350366646601195284691273768647182503&query=translate';
+const baseURL = "https://duckduckgo.com/translation.js?query=translate";
 exports.languages = {
   en: "English",
   af: "Afrikaans",
@@ -91,24 +91,30 @@ exports.languages = {
   ur: "Urdu",
   vi: "Vietnamese",
   cy: "Welsh",
-  yua: "Yucatec Maya"
+  yua: "Yucatec Maya",
 };
 
 /**
-  *
-  * @param {string} text
-  * @param {string} from Empty string to auto-detect
-  * @param {string} to
-  *
-  */
-exports.translate = async (text="", from="", to="en") => {
-  if(from && !exports.languages[from]) throw new Error(`${from} is not a valid language code`);
-  if(!exports.languages[to]) throw new Error(`${to} is not a valid language code`);
+ *
+ * @param {string} text
+ * @param {string} from Empty string to auto-detect
+ * @param {string} to
+ *
+ */
+exports.translate = async (text = "", from = "", to = "en") => {
+  if (from && !exports.languages[from])
+    throw new Error(`${from} is not a valid language code`);
+  if (!exports.languages[to])
+    throw new Error(`${to} is not a valid language code`);
 
-  const res = await request(`${baseURL}${from ? `&from=${from}` : ""}&to=${to}`, {
-    headers : { "Content-Type": "text/plain" },
-    body: text,
-    method: "POST",
-  });
+  const { vqd } = await getJS("translate");
+  const res = await request(
+    `${baseURL}&vqd=${vqd}${from ? `&from=${from}` : ""}&to=${to}`,
+    {
+      headers: { "Content-Type": "text/plain" },
+      body: text,
+      method: "POST",
+    },
+  );
   return JSON.parse(res);
-}
+};
