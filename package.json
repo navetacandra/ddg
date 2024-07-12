@@ -1,7 +1,7 @@
 {
   "name": "@navetacandra/ddg",
   "private": false,
-  "version": "0.0.2",
+  "version": "0.0.2-0",
   "description": "DuckDuckGo Scraper",
   "main": "src/index.js",
   "scripts": {
