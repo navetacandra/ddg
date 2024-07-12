@@ -1,11 +1,26 @@
 const http = require("http");
 const https = require("https");
 
-function randomIp() {
+function randomIpV4() {
   return `${Math.floor(Math.random() * 255)}.${Math.floor(
     Math.random() * 255,
   )}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
 }
+
+function randomIPv6() {
+  const hexChars = "0123456789abcdef";
+  let ipv6 = "";
+  
+  for (let i = 0; i < 8; i++) {
+    let segment = "";
+    for (let j = 0; j < 4; j++) segment += hexChars[Math.floor(Math.random() * hexChars.length)];
+    ipv6 += segment;
+    if (i < 7) ipv6 += ":";
+  }
+
+  return ipv6;
+}
+
 
 exports.request = (urlString, options = {}) => {
   return new Promise((resolve, reject) => {
@@ -16,7 +31,7 @@ exports.request = (urlString, options = {}) => {
       urlString,
       {
         ...options,
-        headers: { ...options.headers, "X-Forwarded-For": randomIp() },
+        headers: { ...options.headers, "X-Forwarded-For": [randomIpV4(), randomIPv6()][Math.floor(Math.random() * 2)] },
       },
       (res) => {
         let data = "";
