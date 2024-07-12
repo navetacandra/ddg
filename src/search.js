@@ -199,5 +199,9 @@ async function mediaSearch(
   }
   return fetchAll
     ? { results: data }
-    : { results: data, hasNext: !!next, next: !!next ? cursor + data.length : undefined };
+    : {
+        results: data,
+        hasNext: !!next,
+        next: !!next ? cursor + data.length : undefined,
+      };
 }
