@@ -1,4 +1,4 @@
-const { translate } = require("../src");
+const { translate } = require("@navetacandra/ddg");
 
 (async () => {
   const translated = await translate("saya suka bakso", "id", "en");

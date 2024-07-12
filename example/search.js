@@ -1,4 +1,4 @@
-const { search } = require("../src");
+const { search } = require("@navetacandra/ddg");
 
 (async () => {
   const regularSearch = await search("duckduckgo", /*"regular"*/);
