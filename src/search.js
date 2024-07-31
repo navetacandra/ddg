@@ -21,7 +21,7 @@ exports.search = async (data, type = "regular", all = false) => {
         data.query,
         apiURL.vqd,
         "i",
-        "&p=1&image_exp=a&product_ad_extensions_exp=b",
+        "&p=-1&image_exp=a&product_ad_extensions_exp=b",
         ({ height, width, image, url, title }) => ({
           height,
           width,
@@ -128,7 +128,16 @@ exports.search = async (data, type = "regular", all = false) => {
 async function regularSearch(path, fetchAll = false) {
   const js = await request(`https://links.duckduckgo.com${path}`);
   const result = js.match(/DDG\.pageLayout\.load\('d',? ?(\[.+\])?\);/);
-  const data = result && result[1] ? JSON.parse(result[1]) : [];
+  let data;
+  if (result && result[1]) {
+    try {
+      data = JSON.parse(result[1]);
+    } catch (err) {
+      throw new Error(`Failed parsing from DDG response.`);
+    }
+  } else {
+    data = [];
+  }
   const next = data.find((d) => d.n);
   const parsed = data
     .filter((d) => !d.n)
@@ -175,9 +184,16 @@ async function mediaSearch(
   cursor = 0,
 ) {
   const res = await request(
-    `https://duckduckgo.com/${prefix}.js?q=${query}&o=json&p=1&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}${additional_param}`,
+    `https://duckduckgo.com/${prefix}.js?q=${query}&o=json&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}${additional_param}`,
   );
-  const { results, next } = JSON.parse(res);
+  let results, next;
+  try {
+    const _parsed = JSON.parse(res);
+    results = _parsed.results;
+    next = _parsed.next;
+  } catch (err) {
+    throw new Error(`Failed parsing from DDG response https://duckduckgo.com/${prefix}.js?q=${query}&o=json&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}${additional_param}`);
+  }
   const data = results.map(parser);
   if (fetchAll && !!next) {
     return {

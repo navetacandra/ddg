@@ -17,7 +17,7 @@ npm install @navetacandra/ddg
 ### Importing the package
 
 ```javascript
-const { search, translate } = require('@navetacandra/ddg');
+const { search, translate } = require("@navetacandra/ddg");
 ```
 
 ### Performing Searches
@@ -28,12 +28,12 @@ You can perform different types of searches: regular, image, video, news, and ma
 
 ```javascript
 (async () => {
-  const regularSearch = await search({ query: 'duckduckgo' } /*'regular'*/);
+  const regularSearch = await search({ query: "duckduckgo" } /*'regular'*/);
   console.log(regularSearch);
 
   if (regularSearch.hasNext) {
     const nextRegularSearch = await search(
-      { query: 'duckduckgo', next: regularSearch.next } /*'regular'*/
+      { query: "duckduckgo", next: regularSearch.next } /*'regular'*/,
     );
     console.log(nextRegularSearch);
   }
@@ -44,7 +44,7 @@ You can perform different types of searches: regular, image, video, news, and ma
 
 ```javascript
 (async () => {
-  const regularSearch = await search({ query: 'duckduckgo' }, 'regular', true);
+  const regularSearch = await search({ query: "duckduckgo" }, "regular", true);
   console.log(regularSearch);
 })();
 ```
@@ -53,13 +53,13 @@ You can perform different types of searches: regular, image, video, news, and ma
 
 ```javascript
 (async () => {
-  const imageSearch = await search({ query: 'duckduckgo' }, 'image');
+  const imageSearch = await search({ query: "duckduckgo" }, "image");
   console.log(imageSearch);
 
   if (imageSearch.hasNext) {
     const nextImageSearch = await search(
-      { query: 'duckduckgo', next: imageSearch.next },
-      'image'
+      { query: "duckduckgo", next: imageSearch.next },
+      "image",
     );
     console.log(nextImageSearch);
   }
@@ -70,7 +70,7 @@ You can perform different types of searches: regular, image, video, news, and ma
 
 ```javascript
 (async () => {
-  const videoSearch = await search({ query: 'duckduckgo' }, 'video');
+  const videoSearch = await search({ query: "duckduckgo" }, "video");
   console.log(videoSearch);
 })();
 ```
@@ -79,7 +79,7 @@ You can perform different types of searches: regular, image, video, news, and ma
 
 ```javascript
 (async () => {
-  const newsSearch = await search({ query: 'duckduckgo' }, 'news');
+  const newsSearch = await search({ query: "duckduckgo" }, "news");
   console.log(newsSearch);
 })();
 ```
@@ -88,7 +88,7 @@ You can perform different types of searches: regular, image, video, news, and ma
 
 ```javascript
 (async () => {
-  const locationSearch = await search({ query: 'duckduckgo' }, 'map');
+  const locationSearch = await search({ query: "duckduckgo" }, "map");
   console.log(locationSearch);
 })();
 ```
@@ -102,9 +102,9 @@ You can translate text from one language to another.
 ```javascript
 (async () => {
   const translated = await translate(
-    'when u realize u messed up ur sleeping pattern and now u gotta do the 24 hours challenge',
-    'en',
-    'id'
+    "when u realize u messed up ur sleeping pattern and now u gotta do the 24 hours challenge",
+    "en",
+    "id",
   );
   console.log(translated);
 })();
@@ -115,9 +115,9 @@ You can translate text from one language to another.
 ```javascript
 (async () => {
   const translatedWithAutoDetection = await translate(
-    'saya suka nasi goreng',
-    '',
-    'en'
+    "saya suka nasi goreng",
+    "",
+    "en",
   );
   console.log(translatedWithAutoDetection);
 })();
@@ -136,6 +136,7 @@ Performs a search on DuckDuckGo.
 - **fetchAll**: Optional, boolean to fetch all search results at once.
 
 **Returns**: A promise that resolves to an object with the search results. The object has the following structure:
+
 - `results`: An array of search results.
 - `hasNext`: A boolean indicating if there are more results available.
 - `next`: A token for fetching the next set of results.
@@ -149,6 +150,7 @@ Translates text from one language to another.
 - **to**: The target language code (string).
 
 **Returns**: A promise that resolves to an object with the translation result. The object has the following structure:
+
 - `translated`: The translated text (string).
 - `detected_language`: The detected source language (string), if auto-detection was used. return null, if form assigned.
 
