@@ -92,75 +92,78 @@ declare const languages = {
 };
 
 type RegularResults = {
-  title: string,
-  url: string, 
-  domain: string,
-  description: string,
-  icon: string
+  title: string;
+  url: string; 
+  domain: string;
+  description: string;
+  icon: string;
 }[];
 
 type ImageResults = {
-  height: number,
-  width: number,
-  image: string,
-  url: string,
-  title: string
+  height: number;
+  width: number;
+  image: string;
+  url: string;
+  title: string;
 }[];
 
 type VideoResults = {
-  url: string,
-  title: string,
-  description: string,
-  duration: string,
-  embed_url: string,
-  published: string,
-  publisher: string,
+  url: string;
+  title: string;
+  description: string;
+  duration: string;
+  embed_url: string;
+  published: string;
+  publisher: string;
   images: {
-    large: string,
-    medium: string,
-    motion: string,
-    small: string
+    large: string;
+    medium: string;
+    motion: string;
+    small: string;
   }
 }[];
 
 type NewsResults = {
-  excerpt: string,
-  relative_time: string,
-  source: string,
-  title: string,
-  url: string,
-  date: number
+  excerpt: string;
+  relative_time: string;
+  source: string;
+  title: string;
+  url: string;
+  date: number;
 }[];
 
 type MapResults = {
-  id: string,
-  name: string,
-  address: string,
-  city: string|null,
-  address_lines: string[],
+  id: string;
+  name: string;
+  address: string;
+  city: string|null;
+  address_lines: string[];
   coordinates: {
-    latitude: number,
-    longitude: number
-  },
-  country_code: string|null,
-  category: string,
-  phone: string,
-  timezone: string
+    latitude: number;
+    longitude: number;
+  };
+  country_code: string|null;
+  category: string;
+  phone: string;
+  timezone: string;
 }[];
+
+type SearchQuery = {
+  query: string;
+  next?: string;
+};
 
 type LanguageKey = keyof typeof languages;
 type Language = typeof languages[keyof typeof languages];
 
+export type SearchType = 'regular'|'image'|'video'|'news'|'map';
 export declare function search(
-  { 
-    query: string, 
-    next?: string 
-  }, 
-  type: 'regular'|'image'|'video'|'news'|'map', 
-  all: boolean
+  sq: SearchQuery,
+  type?: SearchType,
+  all?: boolean
 ): Promise<{
-  hasNext: boolean, 
-  next: string|number, 
+  hasNext: boolean; 
+  next: string|number; 
   results: RegularResults|ImageResults|VideoResults|NewsResults|MapResults
 }>;
 
