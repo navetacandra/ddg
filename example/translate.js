@@ -1,4 +1,4 @@
-const { translate } = require("@navetacandra/ddg");
+const { translate } = require("../src/index");
 
 (async () => {
   const translated = await translate(

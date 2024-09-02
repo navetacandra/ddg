@@ -18,10 +18,7 @@ exports.search = async (data, type = "regular", all = false) => {
       return await regularSearch(apiURL.path, all);
     } else if (type == "image") {
       return await mediaSearch(
-        data.query,
-        apiURL.vqd,
-        "i",
-        "&p=-1&image_exp=a&product_ad_extensions_exp=b",
+        !!data.next ? data.next : `/i.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1&image_exp=a&product_ad_extensions_exp=b`,
         ({ height, width, image, url, title }) => ({
           height,
           width,
@@ -30,14 +27,10 @@ exports.search = async (data, type = "regular", all = false) => {
           title,
         }),
         all,
-        data.next || 0,
       );
     } else if (type == "video") {
       return await mediaSearch(
-        data.query,
-        apiURL.vqd,
-        "v",
-        "&p=-1",
+        !!data.next ? data.next : `/v.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1`,
         ({
           content: url,
           title,
@@ -58,14 +51,10 @@ exports.search = async (data, type = "regular", all = false) => {
           publisher,
         }),
         all,
-        data.next || 0,
       );
     } else if (type == "news") {
       return await mediaSearch(
-        data.query,
-        apiURL.vqd,
-        "news",
-        "&p=-1&noamp=1",
+        !!data.next ? data.next : `/news.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1&noamp=1`,
         (item) => {
           const { excerpt, relative_time, source, title, url, date } = item;
           return {
@@ -78,14 +67,10 @@ exports.search = async (data, type = "regular", all = false) => {
           };
         },
         all,
-        data.next || 0,
       );
     } else if (type == "map") {
       return await mediaSearch(
-        data.query,
-        apiURL.vqd,
-        "local",
-        "tg=maps_places&rt=D&mkexp=b&wiki_info=1&is_requery=1&latitude=0&longitude=0&location_type=geoip",
+        !!data.next ? data.next : `/local.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&tg=maps_places&rt=D&mkexp=b&wiki_info=1&is_requery=1&latitude=0&longitude=0&location_type=geoip`,
         ({
           id,
           name,
@@ -110,7 +95,6 @@ exports.search = async (data, type = "regular", all = false) => {
           timezone,
         }),
         all,
-        data.next || 0,
       );
     }
   } catch (err) {
@@ -165,59 +149,50 @@ async function regularSearch(path, fetchAll = false) {
 /**
  * Parse the JS
  *
- * @param {string} query
- * @param {string} vqnd
- * @param {string} prefix
- * @param {string} additional_param
+ * @param {string} path
  * @param {Function} parser
  * @param {boolean} fetchAll
- * @param {number} cursor
  * @returns {Promise<{results: {title: string, url: string, domain: string, description: string, icon: string}[], hasNext: boolean|undefined, next: number|undefined}>} The search results.
  */
-async function mediaSearch(
-  query,
-  vqnd,
-  prefix,
-  additional_param,
-  parser,
-  fetchAll = false,
-  cursor = 0,
-) {
-  const res = await request(
-    `https://duckduckgo.com/${prefix}.js?q=${query}&o=json&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}${additional_param}`,
-  );
-  let results, next;
+async function mediaSearch(path, parser, fetchAll=false) {
+  const url = new URL(`https://duckduckgo.com${path}`);
   try {
-    const _parsed = JSON.parse(res);
-    results = _parsed.results;
-    next = _parsed.next;
-  } catch (err) {
-    throw new Error(`Failed parsing from DDG response https://duckduckgo.com/${prefix}.js?q=${query}&o=json&s=${cursor}&u=bing&l=us-en&vqd=${vqnd}${additional_param}`);
-  }
-  const data = results.map(parser);
-  if (fetchAll && !!next) {
-    return {
-      results: [
-        ...data,
-        ...(
-          await mediaSearch(
-            query,
-            vqnd,
-            prefix,
-            additional_param,
-            parser,
-            fetchAll,
-            cursor + data.length,
-          )
-        ).results,
-      ],
-    };
-  }
-  return fetchAll
-    ? { results: data }
-    : {
-        results: data,
-        hasNext: !!next,
-        next: !!next ? cursor + data.length : undefined,
+    const res = await request(url.href);
+    let results, next;
+    
+    try {
+      const _parsed = JSON.parse(res);
+      const nextCursor = new URLSearchParams(_parsed.next).get('s');
+      const nextVqd = _parsed.vqd[_parsed.queryEncoded];
+      results = _parsed.results;
+      url.searchParams.set('s', nextCursor);
+      url.searchParams.set('vqd', nextVqd);
+      next = `${url.pathname}?${url.searchParams.toString()}`;
+      console.log(next)
+    } catch(err) {
+      throw new Error(`Failed parsing from DDG response https://duckduckgo.com${path}`);
+    }
+
+    const data = results.map(parser);
+    if (fetchAll && !!next) {
+      return {
+        results: [
+          ...data,
+          ...(
+            await mediaSearch(`/${next}`, parser, fetchAll)
+          ).results,
+        ],
       };
+    }
+
+    return fetchAll
+      ? { results: data }
+      : {
+          results: data,
+          hasNext: !!next,
+          next: !!next ? next : undefined,
+        };
+  } catch(err) {
+    throw err;
+  }
 }

@@ -107,7 +107,7 @@ exports.request =
  * @returns {Promise<{url: string, path: string, vqd: string}>}
  */
 exports.getJS = async (query) => {
-  const html = await exports.request(`https://duckduckgo.com/?q=${query}`);
+  const html = await exports.request(`https://duckduckgo.com/?q=${encodeURIComponent(query)}`);
   const url = html.match(
     /"(https:\/\/links\.duckduckgo\.com\/d\.js[^">]+)">/,
   )[1];
