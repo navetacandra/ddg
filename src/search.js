@@ -18,7 +18,9 @@ exports.search = async (data, type = "regular", all = false) => {
       return await regularSearch(apiURL.path, all);
     } else if (type == "image") {
       return await mediaSearch(
-        !!data.next ? data.next : `/i.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1&image_exp=a&product_ad_extensions_exp=b`,
+        !!data.next
+          ? data.next
+          : `/i.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1&image_exp=a&product_ad_extensions_exp=b`,
         ({ height, width, image, url, title }) => ({
           height,
           width,
@@ -30,7 +32,9 @@ exports.search = async (data, type = "regular", all = false) => {
       );
     } else if (type == "video") {
       return await mediaSearch(
-        !!data.next ? data.next : `/v.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1`,
+        !!data.next
+          ? data.next
+          : `/v.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1`,
         ({
           content: url,
           title,
@@ -54,9 +58,12 @@ exports.search = async (data, type = "regular", all = false) => {
       );
     } else if (type == "news") {
       return await mediaSearch(
-        !!data.next ? data.next : `/news.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1&noamp=1`,
+        !!data.next
+          ? data.next
+          : `/news.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&p=-1&noamp=1`,
         (item) => {
-          const { excerpt, relative_time, source, title, url, date } = item;
+          const { image, excerpt, relative_time, source, title, url, date } =
+            item;
           return {
             excerpt,
             relative_time,
@@ -64,13 +71,16 @@ exports.search = async (data, type = "regular", all = false) => {
             title,
             url,
             date: Number(`${date}`.padEnd(13, "0")),
+            ...(image ? { image } : {}),
           };
         },
         all,
       );
     } else if (type == "map") {
       return await mediaSearch(
-        !!data.next ? data.next : `/local.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&tg=maps_places&rt=D&mkexp=b&wiki_info=1&is_requery=1&latitude=0&longitude=0&location_type=geoip`,
+        !!data.next
+          ? data.next
+          : `/local.js?q=${encodeURIComponent(data.query)}&o=json&s=0&u=bing&l=us-en&vqd=${apiURL.vqd}&tg=maps_places&rt=D&mkexp=b&wiki_info=1&is_requery=1&latitude=0&longitude=0&location_type=geoip`,
         ({
           id,
           name,
@@ -154,23 +164,25 @@ async function regularSearch(path, fetchAll = false) {
  * @param {boolean} fetchAll
  * @returns {Promise<{results: {title: string, url: string, domain: string, description: string, icon: string}[], hasNext: boolean|undefined, next: number|undefined}>} The search results.
  */
-async function mediaSearch(path, parser, fetchAll=false) {
+async function mediaSearch(path, parser, fetchAll = false) {
   const url = new URL(`https://duckduckgo.com${path}`);
   try {
     const res = await request(url.href);
     let results, next;
-    
+
     try {
       const _parsed = JSON.parse(res);
-      const nextCursor = new URLSearchParams(_parsed.next).get('s');
+      const nextCursor = new URLSearchParams(_parsed.next).get("s");
       const nextVqd = _parsed.vqd[_parsed.queryEncoded];
       results = _parsed.results;
-      url.searchParams.set('s', nextCursor);
-      url.searchParams.set('vqd', nextVqd);
+      url.searchParams.set("s", nextCursor);
+      url.searchParams.set("vqd", nextVqd);
       next = `${url.pathname}?${url.searchParams.toString()}`;
-      console.log(next)
-    } catch(err) {
-      throw new Error(`Failed parsing from DDG response https://duckduckgo.com${path}`);
+      console.log(next);
+    } catch (err) {
+      throw new Error(
+        `Failed parsing from DDG response https://duckduckgo.com${path}`,
+      );
     }
 
     const data = results.map(parser);
@@ -178,9 +190,7 @@ async function mediaSearch(path, parser, fetchAll=false) {
       return {
         results: [
           ...data,
-          ...(
-            await mediaSearch(`/${next}`, parser, fetchAll)
-          ).results,
+          ...(await mediaSearch(`/${next}`, parser, fetchAll)).results,
         ],
       };
     }
@@ -192,7 +202,7 @@ async function mediaSearch(path, parser, fetchAll=false) {
           hasNext: !!next,
           next: !!next ? next : undefined,
         };
-  } catch(err) {
+  } catch (err) {
     throw err;
   }
 }

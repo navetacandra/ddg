@@ -93,7 +93,7 @@ declare const languages = {
 
 type RegularResults = {
   title: string;
-  url: string; 
+  url: string;
   domain: string;
   description: string;
   icon: string;
@@ -120,7 +120,7 @@ type VideoResults = {
     medium: string;
     motion: string;
     small: string;
-  }
+  };
 }[];
 
 type NewsResults = {
@@ -128,6 +128,7 @@ type NewsResults = {
   relative_time: string;
   source: string;
   title: string;
+  image?: string;
   url: string;
   date: number;
 }[];
@@ -136,13 +137,13 @@ type MapResults = {
   id: string;
   name: string;
   address: string;
-  city: string|null;
+  city: string | null;
   address_lines: string[];
   coordinates: {
     latitude: number;
     longitude: number;
   };
-  country_code: string|null;
+  country_code: string | null;
   category: string;
   phone: string;
   timezone: string;
@@ -154,17 +155,26 @@ type SearchQuery = {
 };
 
 type LanguageKey = keyof typeof languages;
-type Language = typeof languages[keyof typeof languages];
+type Language = (typeof languages)[keyof typeof languages];
 
-export type SearchType = 'regular'|'image'|'video'|'news'|'map';
+export type SearchType = "regular" | "image" | "video" | "news" | "map";
 export declare function search(
   sq: SearchQuery,
   type?: SearchType,
-  all?: boolean
+  all?: boolean,
 ): Promise<{
-  hasNext: boolean; 
-  next: string|number; 
-  results: RegularResults|ImageResults|VideoResults|NewsResults|MapResults
+  hasNext: boolean;
+  next: string | number;
+  results:
+    | RegularResults
+    | ImageResults
+    | VideoResults
+    | NewsResults
+    | MapResults;
 }>;
 
-export declare function translate(text: string, from: string, to: string): Promise<{detected_language: string|null, translated: string}>;
+export declare function translate(
+  text: string,
+  from: string,
+  to: string,
+): Promise<{ detected_language: string | null; translated: string }>;
