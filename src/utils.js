@@ -19,6 +19,14 @@ function randomIPv6() {
   return ipv6;
 }
 
+const userAgents = [
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
+  'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+  'Mozilla/5.0 (Linux; Android 8.0.0; SM-G955U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+  'Mozilla/5.0 (Linux; Android 11.0; Surface Duo) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'
+];
+
 exports.request =
   typeof fetch === "undefined"
     ? (urlString, options = {}) => {
@@ -34,10 +42,13 @@ exports.request =
             {
               ...options,
               headers: {
+                accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "accept-language": "en-US,en;q=0.9,id;q=0.8",
+                "cache-control": "no-cache",
+                pragma: "no-cache",
+                "user-agent": userAgents[Math.floor(Math.random() * userAgents.length)],
                 ...options.headers,
-                "X-Forwarded-For": [randomIpV4(), randomIPv6()][
-                  Math.floor(Math.random() * 2)
-                ],
+                "X-Forwarded-For": [randomIpV4(), randomIPv6()][Math.floor(Math.random() * 2)],
               },
             },
             (res) => {
@@ -80,19 +91,22 @@ exports.request =
               const res = await fetch(urlString, {
                 ...options,
                 headers: {
+                  accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                  "accept-language": "en-US,en;q=0.9,id;q=0.8",
+                  "cache-control": "no-cache",
+                  pragma: "no-cache",
+                  "user-agent": userAgents[Math.floor(Math.random() * userAgents.length)],
                   ...options.headers,
-                  "X-Forwarded-For": [randomIpV4(), randomIPv6()][
-                    Math.floor(Math.random() * 2)
-                  ],
+                  "X-Forwarded-For": [randomIpV4(), randomIPv6()][Math.floor(Math.random() * 2)],
                 },
               });
               try {
                 resolve(await res.text());
               } catch (err) {
-                reject(new Error(`Error parsing response from ${urlString}`));
+                reject(new Error(`Error parsing response from ${urlString}\n${JSON.stringify(err)}`));
               }
             } catch (err) {
-              reject(new Error(`Request for ${urlString} failed`));
+              reject(new Error(`Request for ${urlString} failed\n${JSON.stringify(err)}`));
             }
           } catch (err) {
             reject(err);
@@ -108,7 +122,7 @@ exports.request =
  */
 exports.getJS = async (query) => {
   const html = await exports.request(
-    `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+    `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`,
   );
   const url = html.match(
     /"(https:\/\/links\.duckduckgo\.com\/d\.js[^">]+)">/,

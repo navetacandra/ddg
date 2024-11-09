@@ -170,6 +170,8 @@ async function mediaSearch(path, parser, fetchAll = false) {
     const res = await request(url.href);
     let results, next;
 
+    if(res === 'If this error persists, please let us know: ops@duckduckgo.com') throw new Error('You got rate limit message.');
+
     try {
       const _parsed = JSON.parse(res);
       const nextCursor = new URLSearchParams(_parsed.next).get("s");
@@ -178,10 +180,9 @@ async function mediaSearch(path, parser, fetchAll = false) {
       url.searchParams.set("s", nextCursor);
       url.searchParams.set("vqd", nextVqd);
       next = `${url.pathname}?${url.searchParams.toString()}`;
-      console.log(next);
     } catch (err) {
       throw new Error(
-        `Failed parsing from DDG response https://duckduckgo.com${path}`,
+        `Failed parsing from DDG response https://duckduckgo.com${path}\n${JSON.stringify(err)}`,
       );
     }
 
