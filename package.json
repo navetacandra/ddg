@@ -1,16 +1,18 @@
 {
   "name": "@navetacandra/ddg",
   "private": false,
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "DuckDuckGo Scraper",
   "main": "dist/ddg.cjs.js",
   "module": "dist/ddg.esm.js",
   "browser": "dist/ddg.umd.js",
   "types": "dist/index.d.ts",
-  "files": ["dist/"],
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build": "rollup -c",
-    "prepare": "husky init"
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
