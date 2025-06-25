@@ -1,8 +1,3 @@
-Berikut adalah README yang telah diperbarui agar sesuai dengan kode sumber yang kamu berikan:
-
----
-
-````md
 # `@navetacandra/ddg` Documentation
 
 ## Introduction
@@ -15,6 +10,7 @@ Install using npm:
 
 ```bash
 npm install @navetacandra/ddg
+```
 ````
 
 ## Usage
@@ -33,11 +29,11 @@ import { search, translate } from "@navetacandra/ddg";
 
 Supports different categories:
 
-* `"web"`
-* `"image"`
-* `"video"`
-* `"news"`
-* `"map"`
+- `"web"`
+- `"image"`
+- `"video"`
+- `"news"`
+- `"map"`
 
 #### Basic Web Search
 
@@ -58,7 +54,10 @@ console.log(result.data.length); // all pages combined
 ```js
 const firstPage = await search({ query: "duckduckgo" }, "image");
 if (firstPage.hasNext) {
-  const nextPage = await search({ query: "duckduckgo", next: firstPage.next }, "image");
+  const nextPage = await search(
+    { query: "duckduckgo", next: firstPage.next },
+    "image",
+  );
   console.log(nextPage);
 }
 ```
@@ -97,9 +96,9 @@ console.log(result); // { text: "I like fried rice", detected_language: "id" }
 
 Performs a DuckDuckGo search.
 
-* **query**: `{ query: string, next?: string }`
-* **type**: `"web" | "image" | "video" | "news" | "map"` (default: `"web"`)
-* **all**: `boolean` — if `true`, recursively fetches all available pages.
+- **query**: `{ query: string, next?: string }`
+- **type**: `"web" | "image" | "video" | "news" | "map"` (default: `"web"`)
+- **all**: `boolean` — if `true`, recursively fetches all available pages.
 
 Returns:
 
@@ -143,15 +142,13 @@ Check the [Usage](#usage) section above for in-depth usage examples.
 
 ## Notes
 
-* No external dependencies.
-* Automatically handles random user-agents and IP spoofing for basic rate-limit circumvention.
-* May still be affected by DuckDuckGo's rate limits on heavy usage.
+- No external dependencies.
+- Automatically handles random user-agents and IP spoofing for basic rate-limit circumvention.
+- May still be affected by DuckDuckGo's rate limits on heavy usage.
 
 ---
 
 ## License
-
-MIT
 
 ```
 MIT License
@@ -176,4 +173,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
-
