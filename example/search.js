@@ -1,4 +1,4 @@
-const { search } = require("../src/index");
+const { search } = require("../dist/ddg.cjs");
 
 (async () => {
   const regularSearch = await search({ query: "duckduckgo" } /*"regular"*/);

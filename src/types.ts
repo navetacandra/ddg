@@ -1,7 +1,82 @@
-const { request, getJS } = require("./utils");
+export type VqdMetadata = {
+  path: string;
+  vqd: string;
+};
 
-const baseURL = "https://duckduckgo.com/translation.js?query=translate";
-exports.languages = {
+export type SearchQuery = {
+  query: string;
+  next?: string;
+};
+
+export type SearchCategory = "web" | "image" | "video" | "news" | "map";
+
+export type ResultParser<T> = (data: any) => T;
+
+export type WebResult = {
+  title: string;
+  url: string;
+  domain: string;
+  description: string;
+  icon: string;
+};
+
+export type ImageResult = {
+  title: string;
+  url: string;
+  imageUrl: string;
+  width: number;
+  height: number;
+};
+
+export type VideoResult = {
+  url: string;
+  title: string;
+  description: string;
+  duration: string;
+  embedUrl: string;
+  publishedAt: string;
+  publisher: string;
+  thumbnails: {
+    large: string;
+    medium: string;
+    motion: string;
+    small: string;
+  };
+};
+
+export type NewsResult = {
+  title: string;
+  excerpt: string;
+  url: string;
+  source: string;
+  date: number;
+  relativeTime: string;
+  imageUrl?: string;
+};
+
+export type MapResult = {
+  id: string;
+  name: string;
+  address: string;
+  addressLines: string[];
+  city: string | null;
+  countryCode: string | null;
+  category: string;
+  phone: string;
+  timezone: string;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+};
+
+export type SearchResponse<T> = {
+  data: T[];
+  next: string | null;
+  hasNext: boolean;
+};
+
+export const languages = {
   en: "English",
   af: "Afrikaans",
   sq: "Albanian",
@@ -92,29 +167,11 @@ exports.languages = {
   vi: "Vietnamese",
   cy: "Welsh",
   yua: "Yucatec Maya",
-};
+} as const;
 
-/**
- *
- * @param {string} text
- * @param {string} from Empty string to auto-detect
- * @param {string} to
- *
- */
-exports.translate = async (text = "", from = "", to = "en") => {
-  if (from && !exports.languages[from])
-    throw new Error(`${from} is not a valid language code`);
-  if (!exports.languages[to])
-    throw new Error(`${to} is not a valid language code`);
-
-  const { vqd } = await getJS("translate");
-  const res = await request(
-    `${baseURL}&vqd=${vqd}${from ? `&from=${from}` : ""}&to=${to}`,
-    {
-      headers: { "Content-Type": "text/plain" },
-      body: text,
-      method: "POST",
-    },
-  );
-  return JSON.parse(res);
+export type LanguageCode = keyof typeof languages;
+export type LanguageName = (typeof languages)[LanguageCode];
+export type TranslateResponse = {
+  detected_language: LanguageCode | null;
+  text: string;
 };

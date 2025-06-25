@@ -2,162 +2,91 @@
 
 ## Introduction
 
-`@navetacandra/ddg` is a Node.js package that provides an easy way to perform searches (regular, image, video, news, and map) and translations using DuckDuckGo. This package is designed to be lightweight and does not use any additional dependencies.
+`@navetacandra/ddg` is a Node.js package that provides DuckDuckGo search and translation capabilities. It supports:
+- Regular web searches
+- Image, video, news, and map searches
+- Text translation with language auto-detection
+- Paginated results for large searches
+
+This package is:
+✅ Lightweight (no external dependencies)
+✅ TypeScript compatible
+✅ Supports Node.js 18+ (uses native `fetch` API)
 
 ## Installation
-
-To install the package, use npm:
 
 ```bash
 npm install @navetacandra/ddg
 ```
 
 ## Usage
-
-### Importing the package
-
-```javascript
-const { search, translate } = require("@navetacandra/ddg");
+### Basic Import
+```js
+const { search, translate, languages } = require("@navetacandra/ddg");
+// OR
+import { search, translate, languages } from "@navetacandra/ddg";
 ```
 
 ### Performing Searches
+#### Web Search
+```js
+// First page of results
+const result = await search({ query: "nodejs" }, "web");
+console.log(result.data); // Array of web results
+console.log(result.hasNext); // true if more results available
 
-You can perform different types of searches: regular, image, video, news, and map.
+// Next page
+if (result.hasNext) {
+  const nextPage = await search(
+    { query: "nodejs", next: result.next },
+    "web"
+  );
+}
 
-#### Regular Search
-
-```javascript
-(async () => {
-  const regularSearch = await search({ query: "duckduckgo" } /*'regular'*/);
-  console.log(regularSearch);
-
-  if (regularSearch.hasNext) {
-    const nextRegularSearch = await search(
-      { query: "duckduckgo", next: regularSearch.next } /*'regular'*/,
-    );
-    console.log(nextRegularSearch);
-  }
-})();
-```
-
-#### Regular Search with Fetch All
-
-```javascript
-(async () => {
-  const regularSearch = await search({ query: "duckduckgo" }, "regular", true);
-  console.log(regularSearch);
-})();
+// Get all pages at once
+const allResults = await search({ query: "nodejs" }, "web", true);
 ```
 
 #### Image Search
+```js
+const images = await search({ query: "cats" }, "image");
+images.data.forEach(img => {
+  console.log(img.title, img.imageUrl);
+});
 
-```javascript
-(async () => {
-  const imageSearch = await search({ query: "duckduckgo" }, "image");
-  console.log(imageSearch);
-
-  if (imageSearch.hasNext) {
-    const nextImageSearch = await search(
-      { query: "duckduckgo", next: imageSearch.next },
-      "image",
-    );
-    console.log(nextImageSearch);
-  }
-})();
 ```
 
-#### Video Search
+#### Other Search Types
+```js
+// Video search
+const videos = await search({ query: "tutorial" }, "video");
 
-```javascript
-(async () => {
-  const videoSearch = await search({ query: "duckduckgo" }, "video");
-  console.log(videoSearch);
-})();
+// News search
+const news = await search({ query: "technology" }, "news");
+
+// Map search
+const places = await search({ query: "coffee New York" }, "map");
 ```
 
-#### News Search
+### Translation
+```js
+// Detect language automatically
+const detected = await translate("Hello world", "", "id");
+console.log(detected); // { detected_language: 'en', text: 'Halo dunia' }
 
-```javascript
-(async () => {
-  const newsSearch = await search({ query: "duckduckgo" }, "news");
-  console.log(newsSearch);
-})();
-```
+// Specify source language
+const manual = await translate("Thank you", "en", "ja");
+console.log(manual.text); // ありがとう
 
-#### Map Search
-
-```javascript
-(async () => {
-  const locationSearch = await search({ query: "duckduckgo" }, "map");
-  console.log(locationSearch);
-})();
-```
-
-### Performing Translations
-
-You can translate text from one language to another.
-
-#### Simple Translation
-
-```javascript
-(async () => {
-  const translated = await translate(
-    "when u realize u messed up ur sleeping pattern and now u gotta do the 24 hours challenge",
-    "en",
-    "id",
-  );
-  console.log(translated);
-})();
-```
-
-#### Translation with Auto Language Detection
-
-```javascript
-(async () => {
-  const translatedWithAutoDetection = await translate(
-    "saya suka nasi goreng",
-    "",
-    "en",
-  );
-  console.log(translatedWithAutoDetection);
-})();
+// List all supported languages
+console.log(Object.entries(languages));
+/*
+[
+  ['en', 'English'],
+  ['af', 'Afrikaans'],
+  ...
+]
+*/
 ```
 
 ## API Reference
-
-### `search(options, type, fetchAll)`
-
-Performs a search on DuckDuckGo.
-
-- **options**: An object with the following properties:
-  - `query`: The search query (string).
-  - `next`: Optional, used for paginating search results (string).
-- **type**: Optional, the type of search (`'regular'`, `'image'`, `'video'`, `'news'`, `'map'`). Default is `'regular'`.
-- **fetchAll**: Optional, boolean to fetch all search results at once.
-
-**Returns**: A promise that resolves to an object with the search results. The object has the following structure:
-
-- `results`: An array of search results.
-- `hasNext`: A boolean indicating if there are more results available.
-- `next`: A token for fetching the next set of results.
-
-### `translate(text, from, to)`
-
-Translates text from one language to another.
-
-- **text**: The text to translate (string).
-- **from**: The source language code (string). Use an empty string `''` for auto-detection.
-- **to**: The target language code (string).
-
-**Returns**: A promise that resolves to an object with the translation result. The object has the following structure:
-
-- `translated`: The translated text (string).
-- `detected_language`: The detected source language (string), if auto-detection was used. return null, if form assigned.
-
-## Examples
-
-See the [usage section](#usage) for detailed examples on how to use the `search` and `translate` functions.
-
-## No Dependencies
-
-This package is designed to be lightweight and does not rely on any additional dependencies.

@@ -1,8 +1,8 @@
-const { translate } = require("../src/index");
+const { translate } = require("../dist/ddg.cjs");
 
 (async () => {
   const translated = await translate(
-    "when u realize u messed up ur sleeping pattern and now u gotta do the 24 hours challenge",
+    "meatball is delicious",
     "en",
     "id",
   );
